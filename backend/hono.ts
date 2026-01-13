@@ -23,7 +23,7 @@ app.all("/trpc/*", async (c) => {
 });
 
 app.get("/", (c) => {
-  return c.json({ status: "ok", message: "Situation Monitor API is running", version: "1.1" });
+  return c.json({ status: "ok", message: "Situation Monitor API is running", version: "1.2" });
 });
 
 export default app;

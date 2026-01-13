@@ -215,7 +215,7 @@ export const twitterRouter = createTRPCRouter({
   getTweetById: publicProcedure
     .input(z.object({ tweetId: z.string() }))
     .mutation(async ({ input }) => {
-      console.log("[twitter.getTweetById] Fetching tweet:", input.tweetId);
+      console.log("[twitter.getTweetById] v1.2 - Fetching tweet:", input.tweetId);
 
       const bearerToken = getBearerToken();
       
