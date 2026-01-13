@@ -16,6 +16,7 @@ import { useRouter } from 'expo-router';
 import { X, Link2, FileText, Sparkles, Plus } from 'lucide-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import { usePositions, PositionSentiment } from '@/contexts/PositionsContext';
+import { trpc } from '@/lib/trpc';
 import * as Haptics from 'expo-haptics';
 
 interface ExtractedData {
@@ -34,6 +35,8 @@ export default function ImportTweetScreen() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [extractedData, setExtractedData] = useState<ExtractedData | null>(null);
   const [selectedTickers, setSelectedTickers] = useState<Set<string>>(new Set());
+  
+  const getTweetMutation = trpc.twitter.getTweetById.useMutation();
 
   const handleClose = () => {
     router.back();
@@ -92,21 +95,8 @@ export default function ImportTweetScreen() {
         
         console.log('[ImportTweet] Fetching tweet:', tweetId);
         try {
-          const response = await fetch(
-            `${process.env.EXPO_PUBLIC_RORK_API_BASE_URL}/trpc/twitter.getTweetById`,
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ json: { tweetId } }),
-            }
-          );
-          
-          console.log('[ImportTweet] Response status:', response.status);
-          const result = await response.json();
-          console.log('[ImportTweet] Full API response:', JSON.stringify(result, null, 2));
-          
-          const tweetData = result?.result?.data?.json;
-          console.log('[ImportTweet] Parsed tweetData:', JSON.stringify(tweetData, null, 2));
+          const tweetData = await getTweetMutation.mutateAsync({ tweetId });
+          console.log('[ImportTweet] Tweet data:', JSON.stringify(tweetData, null, 2));
           
           if (tweetData?.text) {
             contentToAnalyze = tweetData.text;
@@ -121,7 +111,7 @@ export default function ImportTweetScreen() {
             setIsAnalyzing(false);
             return;
           } else {
-            console.log('[ImportTweet] No text and no error in response - unexpected structure');
+            console.log('[ImportTweet] No text in response');
             Alert.alert(
               'Could Not Fetch Tweet',
               'Twitter API did not return the tweet text. This could be due to:\n\n• API access level (Basic tier may have limitations)\n• Rate limiting\n• Tweet is protected or deleted\n\nTry using "Paste Text" to manually paste the tweet content.',
