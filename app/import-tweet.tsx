@@ -93,7 +93,7 @@ export default function ImportTweetScreen() {
         console.log('[ImportTweet] Fetching tweet:', tweetId);
         try {
           const response = await fetch(
-            `${process.env.EXPO_PUBLIC_RORK_API_BASE_URL}/api/trpc/twitter.getTweetById`,
+            `${process.env.EXPO_PUBLIC_RORK_API_BASE_URL}/trpc/twitter.getTweetById`,
             {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
