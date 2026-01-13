@@ -23,7 +23,17 @@ app.all("/trpc/*", async (c) => {
 });
 
 app.get("/", (c) => {
-  return c.json({ status: "ok", message: "Situation Monitor API is running", version: "1.2" });
+  return c.json({ status: "ok", message: "Situation Monitor API is running", version: "1.3" });
+});
+
+app.get("/debug/routes", (c) => {
+  const routes = Object.keys(appRouter._def.procedures);
+  console.log("[debug/routes] Available procedures:", routes);
+  return c.json({ 
+    procedures: routes,
+    hasTwitter: routes.some(r => r.startsWith('twitter')),
+    timestamp: new Date().toISOString()
+  });
 });
 
 export default app;
