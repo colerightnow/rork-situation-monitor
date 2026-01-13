@@ -95,8 +95,9 @@ export default function ImportTweetScreen() {
         
         console.log('[ImportTweet] Fetching tweet:', tweetId);
         try {
+          console.log('[ImportTweet] Calling getTweetById mutation...');
           const tweetData = await getTweetMutation.mutateAsync({ tweetId });
-          console.log('[ImportTweet] Tweet data:', JSON.stringify(tweetData, null, 2));
+          console.log('[ImportTweet] Tweet data received:', JSON.stringify(tweetData, null, 2));
           
           if (tweetData?.text) {
             contentToAnalyze = tweetData.text;
@@ -120,11 +121,18 @@ export default function ImportTweetScreen() {
             setIsAnalyzing(false);
             return;
           }
-        } catch (err) {
-          console.log('[ImportTweet] Fetch error:', err);
+        } catch (err: unknown) {
+          const errorMessage = err instanceof Error ? err.message : String(err);
+          console.log('[ImportTweet] tRPC mutation error:', errorMessage);
+          console.log('[ImportTweet] Full error:', JSON.stringify(err, null, 2));
+          
+          // Check if it's a tRPC error with more details
+          const trpcError = err as { message?: string; data?: { code?: string } };
+          const displayMessage = trpcError?.message || errorMessage;
+          
           Alert.alert(
-            'Network Error',
-            'Could not connect to Twitter API. Use "Paste Text" to manually paste the tweet content.',
+            'API Error',
+            `${displayMessage}\n\nUse "Paste Text" to manually paste the tweet content.`,
             [{ text: 'OK' }]
           );
           setIsAnalyzing(false);
