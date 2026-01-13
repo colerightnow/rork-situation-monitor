@@ -94,6 +94,7 @@ export default function ImportTweetScreen() {
         }
         
         console.log('[ImportTweet] Fetching tweet:', tweetId);
+        console.log('[ImportTweet] API Base URL:', process.env.EXPO_PUBLIC_RORK_API_BASE_URL);
         try {
           console.log('[ImportTweet] Calling getTweetById mutation...');
           const tweetData = await getTweetMutation.mutateAsync({ tweetId });
@@ -126,13 +127,29 @@ export default function ImportTweetScreen() {
           console.log('[ImportTweet] tRPC mutation error:', errorMessage);
           console.log('[ImportTweet] Full error:', JSON.stringify(err, null, 2));
           
+          // Check if it's a network/fetch error
+          const isNetworkError = errorMessage.includes('fetch') || 
+                                  errorMessage.includes('network') || 
+                                  errorMessage.includes('Network') ||
+                                  errorMessage.includes('Failed to fetch');
+          
           // Check if it's a tRPC error with more details
-          const trpcError = err as { message?: string; data?: { code?: string } };
-          const displayMessage = trpcError?.message || errorMessage;
+          const trpcError = err as { message?: string; data?: { code?: string }; cause?: { message?: string } };
+          let displayMessage = trpcError?.message || errorMessage;
+          
+          // Get more details from cause if available
+          if (trpcError?.cause?.message) {
+            displayMessage = trpcError.cause.message;
+          }
+          
+          const title = isNetworkError ? 'Network Error' : 'API Error';
+          const hint = isNetworkError 
+            ? 'Could not connect to the server. Check your internet connection.'
+            : '';
           
           Alert.alert(
-            'API Error',
-            `${displayMessage}\n\nUse "Paste Text" to manually paste the tweet content.`,
+            title,
+            `${displayMessage}${hint ? '\n\n' + hint : ''}\n\nUse "Paste Text" to manually paste the tweet content.`,
             [{ text: 'OK' }]
           );
           setIsAnalyzing(false);
