@@ -15,7 +15,14 @@ const getBaseUrl = () => {
     );
   }
 
-  return url;
+  // Remove trailing slash and /trpc suffix if present to avoid double path
+  let cleanUrl = url.replace(/\/$/, '');
+  if (cleanUrl.endsWith('/trpc')) {
+    cleanUrl = cleanUrl.slice(0, -5);
+  }
+  
+  console.log('[trpc] Base URL:', cleanUrl);
+  return cleanUrl;
 };
 
 export const trpcClient = trpc.createClient({
